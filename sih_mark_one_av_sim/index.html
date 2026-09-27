@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MARK-One | Adaptive Path Planning & Collision Avoidance (SIH 2026)</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- APPLICATION HEADER -->
+    <header class="app-header">
+        <div class="brand-section">
+            <div class="brand-badge-group">
+                <span class="product-badge">MARK-One</span>
+                <span class="sih-tag">SIH 2026 • SIH26037</span>
+            </div>
+            <div class="brand-divider"></div>
+            <div class="brand-text">
+                <div class="brand-title">Adaptive Path Planning & Collision Avoidance</div>
+                <div class="brand-subtitle">Autonomous Vehicle Simulation on Unstructured Indian Roads</div>
+            </div>
+        </div>
+
+        <div class="header-meta">
+            <div class="meta-tag">
+                <span class="meta-dot"></span>
+                <span>Closed-Loop Architecture</span>
+            </div>
+            <div class="live-indicator">
+                <span class="pulse-dot"></span>
+                <span>SIMULATION ACTIVE (60 FPS)</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- DEMO MODE BANNER -->
+    <div id="demo-status-banner"></div>
+
+    <!-- CONTROLS & TOOLBAR -->
+    <div class="controls-bar">
+        <div class="control-group">
+            <button id="btn-play-pause" class="btn btn-primary active">
+                <span class="icon">⏸</span> Pause
+            </button>
+            <button id="btn-step" class="btn" title="Advance single physics frame">
+                <span class="icon">⏭</span> Step
+            </button>
+            <button id="btn-reset" class="btn" title="Reset scenario & vehicle state">
+                <span class="icon">🔄</span> Reset
+            </button>
+        </div>
+
+        <div class="control-divider"></div>
+
+        <div class="control-group">
+            <span class="control-label">Scenario</span>
+            <select id="select-scenario" class="select-input">
+                <option value="normal_traffic">Scenario 1: Normal Indian Traffic (Mixed Weaving)</option>
+                <option value="slow_vehicle">Scenario 2: Slow Vehicle Corridor Overtake</option>
+                <option value="pedestrian_crossing">Scenario 3: Informal Pedestrian Crossing</option>
+                <option value="pothole_avoidance">Scenario 4: Severe Pothole Avoidance</option>
+                <option value="parked_vehicle">Scenario 5: Parked Vehicle & Encroachment</option>
+                <option value="mixed_obstacles">Scenario 6: Mixed Multi-Obstacle Chaos</option>
+                <option value="sudden_obstacle">Scenario 7: Sudden Cut-In / Emergency Deceleration</option>
+                <option value="narrow_road">Scenario 8: Narrow Chokepoint & Barricades</option>
+                <option value="cattle_crossing">Scenario 9: Cattle-Crossing Event (SIH PPT #05)</option>
+                <option value="dense_market">Scenario 10: Dense Market Area (SIH PPT #04)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <button id="btn-demo-mode" class="btn btn-demo">
+                SIH Demo Flow (75s)
+            </button>
+        </div>
+
+        <div class="control-divider"></div>
+
+        <div class="control-group">
+            <span class="control-label">Time Scale</span>
+            <div class="btn-group">
+                <button class="btn btn-sim-speed" data-speed="0.5">0.5x</button>
+                <button class="btn btn-sim-speed active" data-speed="1.0">1.0x</button>
+                <button class="btn btn-sim-speed" data-speed="2.0">2.0x</button>
+            </div>
+        </div>
+
+        <div class="control-divider"></div>
+
+        <div class="control-group layer-toggles">
+            <span class="control-label">Sensor Overlays:</span>
+            <label class="toggle-item"><input type="checkbox" id="toggle-lidar" checked> LiDAR</label>
+            <label class="toggle-item"><input type="checkbox" id="toggle-radar" checked> Radar</label>
+            <label class="toggle-item"><input type="checkbox" id="toggle-camera" checked> Camera</label>
+            <label class="toggle-item"><input type="checkbox" id="toggle-candidates" checked> Lattice Paths</label>
+            <label class="toggle-item"><input type="checkbox" id="toggle-corridor" checked> Safe Corridor</label>
+        </div>
+    </div>
+
+    <!-- 5-STAGE CLOSED-LOOP AUTONOMOUS PIPELINE BAR -->
+    <div class="pipeline-bar">
+        <div class="pipeline-step active" id="pipe-step-1">
+            <span class="step-num">1</span>
+            <div class="step-content">
+                <span class="step-label">Perception</span>
+                <span class="step-detail" id="pipe-detail-1">LiDAR + Radar + Camera</span>
+            </div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipeline-step" id="pipe-step-2">
+            <span class="step-num">2</span>
+            <div class="step-content">
+                <span class="step-label">Threat Assessment</span>
+                <span class="step-detail" id="pipe-detail-2">Threat: SAFE</span>
+            </div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipeline-step" id="pipe-step-3">
+            <span class="step-num">3</span>
+            <div class="step-content">
+                <span class="step-label">Lattice Replanning</span>
+                <span class="step-detail" id="pipe-detail-3">Evaluating Free Space</span>
+            </div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipeline-step" id="pipe-step-4">
+            <span class="step-num">4</span>
+            <div class="step-content">
+                <span class="step-label">Path Selection</span>
+                <span class="step-detail" id="pipe-detail-4">Safe Corridor: CENTER</span>
+            </div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipeline-step" id="pipe-step-5">
+            <span class="step-num">5</span>
+            <div class="step-content">
+                <span class="step-label">Vehicle Control</span>
+                <span class="step-detail" id="pipe-detail-5">Pure Pursuit & Speed</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN WORKSPACE -->
+    <div class="main-workspace">
+        
+        <!-- SIMULATION VIEWPORT -->
+        <div class="viewport-container">
+            <canvas id="sim-canvas"></canvas>
+
+            <!-- Interactive Obstacle Spawner Overlay (Testing Tool) -->
+            <div class="viewport-overlay-tools">
+                <div class="overlay-header">
+                    <span class="overlay-title">Interactive Obstacle Injector</span>
+                    <span class="overlay-hint">Click on road to place</span>
+                </div>
+                <div class="spawn-buttons-grid">
+                    <button class="btn-spawn-obs" data-type="CATTLE">Cattle</button>
+                    <button class="btn-spawn-obs" data-type="POTHOLE">Pothole</button>
+                    <button class="btn-spawn-obs" data-type="PEDESTRIAN">Pedestrian</button>
+                    <button class="btn-spawn-obs" data-type="AUTO_RICKSHAW">Auto Rickshaw</button>
+                    <button class="btn-spawn-obs" data-type="BARRICADE">Barricade</button>
+                    <button class="btn-spawn-obs" data-type="MOTORCYCLE">Motorcycle</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT TELEMETRY & ENGINEERING SIDEBAR -->
+        <aside class="sidebar-panel">
+            <div class="sidebar-content">
+                
+                <!-- CARD 1: EGO VEHICLE TELEMETRY -->
+                <div class="hud-card">
+                    <div class="card-header">
+                        <span class="card-title">Vehicle Telemetry</span>
+                        <span id="val-mode" class="status-pill mode-autonomous">AUTONOMOUS</span>
+                    </div>
+
+                    <div class="speed-gauge-container">
+                        <div class="gauge-label-row">
+                            <span class="gauge-label">Cruising Velocity</span>
+                            <span class="gauge-value">
+                                <span id="val-speed">42.0</span> km/h
+                            </span>
+                        </div>
+                        <div class="gauge-bar-bg">
+                            <div id="gauge-speed-fill" class="gauge-bar-fill"></div>
+                        </div>
+                    </div>
+
+                    <div class="telemetry-grid">
+                        <div class="telemetry-cell">
+                            <span class="cell-label">Steering Angle</span>
+                            <span id="val-steer" class="cell-value">0.0° (CENTER)</span>
+                        </div>
+                        <div class="telemetry-cell">
+                            <span class="cell-label">Acceleration</span>
+                            <span id="val-accel" class="cell-value">+0.00 m/s²</span>
+                        </div>
+                        <div class="telemetry-cell">
+                            <span class="cell-label">Distance Traveled</span>
+                            <span id="val-dist" class="cell-value">0.0 m</span>
+                        </div>
+                        <div class="telemetry-cell">
+                            <span class="cell-label">Planner Cycle</span>
+                            <span class="cell-value">20.0 Hz</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: RISK ASSESSMENT & THREAT ENGINE -->
+                <div class="hud-card">
+                    <div class="card-header">
+                        <span class="card-title">Threat & Risk Assessment</span>
+                        <span id="risk-badge" class="card-badge"><span id="val-risk-level">SAFE</span></span>
+                    </div>
+
+                    <!-- Highest Risk Actor Alert Card -->
+                    <div id="highest-risk-card"></div>
+                </div>
+
+                <!-- CARD 3: ADAPTIVE PATH PLANNER (CORE DEMO) -->
+                <div class="hud-card">
+                    <div class="card-header">
+                        <span class="card-title">Adaptive Path Planner</span>
+                        <span id="val-plan-status" class="card-badge">NOMINAL</span>
+                    </div>
+
+                    <div class="telemetry-cell active-decision-cell">
+                        <span class="cell-label">Active Replanning Decision</span>
+                        <span id="val-plan-decision" class="cell-value decision-text">NOMINAL_TRACKING</span>
+                    </div>
+
+                    <!-- Free Space Corridors (Left vs Right) -->
+                    <div class="telemetry-grid">
+                        <div class="telemetry-cell">
+                            <span class="cell-label">Left Corridor Space</span>
+                            <span id="val-free-left" class="cell-value">3.5 m</span>
+                        </div>
+                        <div class="telemetry-cell">
+                            <span class="cell-label">Right Corridor Space</span>
+                            <span id="val-free-right" class="cell-value">3.5 m</span>
+                        </div>
+                    </div>
+
+                    <div class="telemetry-grid">
+                        <div class="telemetry-cell">
+                            <span class="cell-label">Candidates Evaluated</span>
+                            <span id="val-candidates-count" class="cell-value">4 Paths</span>
+                        </div>
+                        <div class="telemetry-cell">
+                            <span class="cell-label">Optimal Trajectory Cost</span>
+                            <span id="val-total-cost" class="cell-value">4.2</span>
+                        </div>
+                    </div>
+
+                    <!-- Cost Function Component Breakdown -->
+                    <div class="cost-breakdown-panel">
+                        <div class="cost-panel-title">
+                            Multi-Objective Cost J(τ) Components:
+                        </div>
+                        <div class="cost-breakdown-row">
+                            <span>Collision Penalty (J_col):</span>
+                            <strong id="cost-col">0</strong>
+                        </div>
+                        <div class="cost-breakdown-row">
+                            <span>Boundary Margin (J_bound):</span>
+                            <strong id="cost-bound">0</strong>
+                        </div>
+                        <div class="cost-breakdown-row">
+                            <span>Smoothness / Jerk (J_smooth):</span>
+                            <strong id="cost-smooth">2.1</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 4: PERCEPTION & SENSOR FUSION TRACKS -->
+                <div class="hud-card">
+                    <div class="card-header">
+                        <span class="card-title">Sensor Fusion & Object Tracking</span>
+                        <span id="val-fusion-count" class="card-badge">0 Tracked</span>
+                    </div>
+
+                    <div class="sensor-suite-meta">
+                        <span>Suite: Camera (4K) + LiDAR (64B) + Radar (FMCW)</span>
+                        <span id="val-fusion-conf" class="conf-badge">95% Conf</span>
+                    </div>
+
+                    <!-- List of Detected Obstacles -->
+                    <div id="detected-objects-list" class="object-list-container">
+                        <div class="empty-state">No obstacles detected in sensor range (Path Clear)</div>
+                    </div>
+                </div>
+
+                <!-- CARD 5: TECHNICAL LEGEND -->
+                <div class="hud-card legend-card">
+                    <div class="card-header">
+                        <span class="card-title">Engineering Visual Key</span>
+                    </div>
+                    <div class="legend-grid">
+                        <div class="legend-item"><span class="legend-swatch path-optimal"></span> Selected Optimal Path</div>
+                        <div class="legend-item"><span class="legend-swatch path-feasible"></span> Feasible Alternatives</div>
+                        <div class="legend-item"><span class="legend-swatch path-blocked"></span> Blocked / Collision</div>
+                        <div class="legend-item"><span class="legend-swatch dot-lidar"></span> LiDAR Ground Reflection</div>
+                        <div class="legend-item"><span class="legend-swatch cone-radar"></span> 77GHz Radar Scan Arc</div>
+                        <div class="legend-item"><span class="legend-swatch cone-camera"></span> Optical Vision Frustum</div>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- ES Module Simulation Entry Point -->
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
